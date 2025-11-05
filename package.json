@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "name": "@typefirst/typist",
+  "author": "santiago-elustondo",
+  "description": "A minimal, compositional, and debug-friendly suite of type-level utilities for TypeScript",
+  "keywords": [ "typescript", "type-level", "phantom-types", "static-analysis", "type-checking", "assertions", "symbolic", "compile-time", "zero-runtime" ],
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "example": "tsx src/example.ts",
+    "prepublishOnly": "npm run typecheck",
+    "test": "npm run typecheck" },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": { "types": "./src/index.ts", "import": "./src/index.ts", "default": "./src/index.ts" },
+    "./assertions": { "types": "./src/assertions.ts", "import": "./src/assertions.ts", "default": "./src/assertions.ts" },
+    "./comparators": { "types": "./src/comparators.ts", "import": "./src/comparators.ts", "default": "./src/comparators.ts" },
+    "./verdicts": { "types": "./src/verdicts.ts", "import": "./src/verdicts.ts", "default": "./src/verdicts.ts" },
+    "./operators": { "types": "./src/operators.ts", "import": "./src/operators.ts", "default": "./src/operators.ts" },
+    "./phantom": { "types": "./src/phantom.ts", "import": "./src/phantom.ts", "default": "./src/phantom.ts" } },
+  "files": [ "src/**/*.ts", "*.md" ],
+  "repository": { "type": "git", "url": "https://github.com/type-first/typist.git" },
+  "bugs": { "url": "https://github.com/type-first/typist/issues" },
+  "homepage": "https://github.com/type-first/typist/tree/main/#readme",
+  "engines": { "node": ">=18.0.0" },
+  "peerDependencies": { "typescript": ">=4.9.0" },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0" } }

@@ -1,0 +1,25 @@
+# Development files
+example.ts
+tsconfig.json
+
+# Build artifacts
+dist/
+node_modules/
+
+# Version control
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+*.log
