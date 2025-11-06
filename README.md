@@ -177,8 +177,9 @@ test_('type equality checks', () => {
 
 const myExample = example_('string literal behavior', () => {
   const str = 'hello' as const
-  extends_<string, typeof str>()  // ✓ "hello" extends string
-  // extends_<typeof str, string>() // ❌ Would fail - string doesn't extend "hello"
+  extends_<string, typeof str>() // 'hello' :< string
+  // @ts-expect-error:✔︎ string !< 'hello'
+  extends_<typeof str, string>()
   return str
 })
 
