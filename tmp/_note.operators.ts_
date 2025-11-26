@@ -1,0 +1,366 @@
+/**
+ * TYPIST OPERATORS GUIDE
+ * 
+ * This file demonstrates all the type operators available in typist/operators.
+ * These operators are designed for type-level programming and phantom types,
+ * allowing you to work with types as if they were values at compile time.
+ * 
+ * All operators follow a consistent pattern:
+ * - They return phantom values (typed but with no runtime content)
+ * - Multiple alias forms: full_name_, short_, single_letter
+ * - Designed for composition and type manipulation
+ */
+
+import { 
+  type_, t_, t,
+  assign_, a_, a,
+  widen_, w_, w,
+  specify_, s_, s,
+  intersect_,
+  force_, f_, f,
+  any_, __
+} from '../src/operators'
+
+// =============================================================================
+// 1. TYPE_ - The Core Type Constructor
+// =============================================================================
+
+/**
+ * type_<T>() creates a phantom value of type T
+ * 
+ * This is the fundamental building block - it lets you "instantiate" a type
+ * without providing an actual runtime value. Perfect for type-level computations.
+ * 
+ * Aliases: type_, t_, t
+ */
+
+// Basic usage - create phantom values of any type
+const numberPhantom = type_<number>()      // type: number, value: null
+const stringPhantom = t_<string>()         // type: string, value: null  
+const boolPhantom = t<boolean>()           // type: boolean, value: null
+
+// Works with complex types too
+type UserProfile = { name: string; age: number }
+const userPhantom = type_<UserProfile>()          // type: UserProfile, value: null
+
+// Useful for generic type testing
+function testGenericType<T>() {
+  const phantom = type_<T>()
+  // Now we can use typeof phantom to reference T in type expressions
+  return phantom
+}
+
+// =============================================================================
+// 2. ASSIGN_ - Value-Preserving Type Assignment  
+// =============================================================================
+
+/**
+ * assign_<T>(value) ensures the value conforms to type T
+ * 
+ * Unlike type_(), this preserves the actual runtime value while ensuring
+ * type safety. It's like a type assertion but in function form.
+ * 
+ * Aliases: assign_, a_, a
+ */
+
+/**** #
+t_ also preserves value, they usually all do. 
+however, a_ can be used like `return a_<'yes'|'no'>('yes')`, which is 
+like `return 'yes' as 'yes'|'no'` but ensuring assignability. i believe
+`as` lets you assign to types that are not actually assignable, not sure when exactly.
+effectively we're widening the type to a more generic type --so what does widen_ do?--, 
+which is useful when you want to infer the function's return type from a return statement 
+but dont want it to be too narrow.
+****/
+const e:string = ''
+const a = e as 'yes'|'no' // this works even though 'string' is not assignable to 'yes'|'no'
+// @ts-expect-error
+const a2 = a_<'yes'|'no'>(e) 
+
+// Type-safe assignment with value preservation
+const validNumber = assign_<42>(42)        // type: number, value: 42
+const validString = a_<string>("hello")        // type: string, value: "hello"
+const validBool = a_<boolean>(true)             // type: boolean, value: true
+
+// Useful for ensuring values match expected types
+interface Config {
+  port: number
+  host: string
+}
+
+const config = assign_<Config>({
+  port: 3000,
+  host: "localhost"
+  // TypeScript ensures this matches Config interface
+})
+
+// =============================================================================
+// 3. WIDEN_ - Const Assertion Bypass
+// =============================================================================
+
+/**
+ * widen_<T>(value) takes a const-asserted value and widens it to type T
+ * 
+ * This is useful when you have a literal type but want to treat it as
+ * its wider type while preserving the runtime value.
+ * 
+ * Aliases: widen_, w_, w
+ */
+
+// Without widen_, literals are very specific
+const literalString = "hello" as const    // type: "hello"
+const literalNumber = 42 as const         // type: 42
+
+// With widen_, we get the broader type
+const widenedString = widen_("hello")  // type: string, value: "hello"
+const widenedNumber = w_(42 as const)           // type: number, value: 42
+
+// Practical example: working with const arrays
+const colors = ["red", "green", "blue"] as const  // type: readonly ["red", "green", "blue"]
+const colorArray = w(colors)                       // type: readonly string[], value: ["red", "green", "blue"]
+
+// =============================================================================
+// 4. SPECIFY_ - Curried Type Specification
+// =============================================================================
+
+/**
+ * specify_<T>(baseValue?) returns a function that creates values extending T
+ * 
+ * This creates a "type factory" that ensures all created values extend
+ * the base type T. It's curried for convenient reuse.
+ * 
+ * Aliases: specify_, s_, s
+ */
+
+// Create a type specifier for shapes
+interface Shape {
+  area(): number
+}
+
+const createShape = specify_<Shape>()
+
+// Now we can create specific shapes that extend Shape
+interface Circle extends Shape {
+  radius: number
+}
+
+interface Rectangle extends Shape {
+  width: number
+  height: number
+}
+
+const circlePhantom = createShape<Circle>()      // type: Circle
+const rectanglePhantom = createShape<Rectangle>() // type: Rectangle
+
+// Practical example: API response typing
+interface BaseResponse {
+  status: number
+  timestamp: Date
+}
+
+const createResponse = s_<BaseResponse>()
+
+interface UserResponse extends BaseResponse {
+  user: UserProfile
+}
+
+interface ErrorResponse extends BaseResponse {
+  error: string
+}
+
+const userResponse = createResponse<UserResponse>()   // type: UserResponse
+const errorResponse = createResponse<ErrorResponse>() // type: ErrorResponse
+
+// =============================================================================
+// 5. INTERSECT_ - Type Intersection
+// =============================================================================
+
+/**
+ * intersect_<T0, T1>(val0, val1) creates a phantom value of type T0 & T1
+ * 
+ * This combines two types into an intersection type, useful for mixing
+ * capabilities or traits.
+ */
+
+// Combining capabilities
+interface CanFly {
+  fly(): void
+}
+
+interface CanSwim {
+  swim(): void
+}
+
+// Create a phantom that can both fly and swim
+const amphibiousPhantom = intersect_(type_<CanFly>(), type_<CanSwim>())
+// type: CanFly & CanSwim
+
+// Practical example: mixing user roles
+interface User {
+  name: string
+  id: string
+}
+
+interface AdminCapabilities {
+  deleteUser(id: string): void
+  viewLogs(): void
+}
+
+interface ModeratorCapabilities {
+  banUser(id: string): void
+  deletePost(id: string): void
+}
+
+// Create an admin-moderator hybrid
+const superUserPhantom = intersect_(
+  type_<User & AdminCapabilities>(),
+  type_<ModeratorCapabilities>()
+)
+// type: User & AdminCapabilities & ModeratorCapabilities
+
+// =============================================================================
+// 6. FORCE_ - Unsafe Type Coercion
+// =============================================================================
+
+/**
+ * force_<T>(value?) forces any value to be treated as type T
+ * 
+ * ⚠️  DANGEROUS: This bypasses TypeScript's type safety entirely.
+ * Use only when you're absolutely certain about the type, typically
+ * when dealing with external APIs or gradual migration.
+ * 
+ * Aliases: force_, f_, f
+ */
+
+// Forcing unknown values to specific types (unsafe!)
+declare const someApiResponse: unknown
+
+const forcedUser = force_<UserProfile>(someApiResponse)      // type: UserProfile, but could be anything!
+const forcedNumber = f_<number>("not a number")       // type: number, but actually a string!
+const forcedArray = f<string[]>()                     // type: string[], value: null
+
+// Slightly safer usage with runtime checks
+function safeForce<T>(value: unknown, validator: (v: unknown) => v is T): T | null {
+  if (validator(value)) {
+    return force_<T>(value)
+  }
+  return null
+}
+
+// =============================================================================
+// 7. ANY_ - Any Type Escape Hatch
+// =============================================================================
+
+/**
+ * any_(value?) creates a phantom value of type any
+ * 
+ * This is the ultimate escape hatch when you need to work with
+ * truly dynamic content where types cannot be determined.
+ * 
+ * Aliases: any_, __
+ */
+
+// Creating any-typed phantoms
+const anyPhantom = any_()           // type: any, value: null
+const anyWithValue = any_("hello")  // type: any, value: "hello"
+const quickAny = __()               // type: any (shortest form)
+
+// Useful for migrating JavaScript code gradually
+function legacyFunction(data: any) {
+  const typedData = __(data)
+  // Now work with typedData as any type
+  return typedData
+}
+
+// =============================================================================
+// COMPOSITION PATTERNS
+// =============================================================================
+
+/**
+ * These operators are designed to be composed together for complex
+ * type manipulations and phantom type workflows.
+ */
+
+// Building a type-safe builder pattern
+interface BuilderState<T> {
+  value: T
+  isComplete: boolean
+}
+
+function createBuilder<T>() {
+  return {
+    initial: () => specify_<BuilderState<T>>(),
+    withValue: <V extends T>(value: V) => 
+      assign_<BuilderState<V>>({ value, isComplete: true }),
+    asAny: () => force_<BuilderState<any>>()
+  }
+}
+
+// Using the builder
+const stringBuilder = createBuilder<string>()
+const stringState = stringBuilder.withValue("hello")
+
+// Type-level conditional logic with operators
+function conditionalType<T, U>(
+  condition: boolean,
+  trueValue: T,
+  falseValue: U
+) {
+  if (condition) {
+    return widen_(trueValue)
+  } else {
+    return force_<T>(falseValue)
+  }
+}
+
+// =============================================================================
+// PRACTICAL EXAMPLES
+// =============================================================================
+
+/**
+ * Real-world scenarios where these operators shine
+ */
+
+// 1. Type-safe state machine
+type State = "idle" | "loading" | "success" | "error"
+
+const createStateMachine = specify_<{ state: State }>()
+
+const idleState = createStateMachine<{ state: "idle" }>()
+const loadingState = createStateMachine<{ state: "loading"; progress: number }>()
+
+// 2. Phantom-typed IDs for different entities
+type UserId = string & { _brand: "UserId" }
+type PostId = string & { _brand: "PostId" }
+
+const createUserId = (id: string) => force_<UserId>(id)
+const createPostId = (id: string) => force_<PostId>(id)
+
+// 3. Type-level validation pipeline
+function validateAndTransform<Input, Output>(
+  input: Input,
+  validator: (i: Input) => boolean,
+  transformer: (i: Input) => Output
+): Output | null {
+  if (validator(input)) {
+    const validInput = assign_(input)
+    const result = transformer(validInput)
+    return assign_(result)
+  }
+  return null
+}
+
+/**
+ * SUMMARY:
+ * 
+ * - type_/t_/t: Create phantom values of any type
+ * - assign_/a_/a: Type-safe value assignment  
+ * - widen_/w_/w: Widen const-asserted values
+ * - specify_/s_/s: Create curried type factories
+ * - intersect_: Combine types with intersection
+ * - force_/f_/f: Unsafe type coercion (use carefully!)
+ * - any_/__: Escape to any type
+ * 
+ * These operators enable powerful type-level programming patterns
+ * while maintaining runtime safety and composability.
+ */

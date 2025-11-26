@@ -1,4 +1,4 @@
-import { $Equal, is_, never_, t, test_, yes_ } from './index'
+import { $Equal, is_, never_, t_, test_, yes_ } from '../src/index'
 
 export type GetAtPath
   < Obj, Path extends readonly any[] > =
@@ -14,9 +14,9 @@ export type GetAtPath
 
 test_(async () => {
   type MyObj = { foo: { bar: { baz: string }, qux: number }, corge: boolean }
-  is_<GetAtPath<MyObj, ['foo','bar', 'baz']>>(t<string>()) 
-  is_<GetAtPath<MyObj, ['foo', 'qux']>>(t<number>())
-  is_<GetAtPath<MyObj, ['corge']>>(t<boolean>())
+  is_<GetAtPath<MyObj, ['foo','bar', 'baz']>>(t_<string>()) 
+  is_<GetAtPath<MyObj, ['foo', 'qux']>>(t_<number>())
+  is_<GetAtPath<MyObj, ['corge']>>(t_<boolean>())
   yes_< $Equal<MyObj, GetAtPath<MyObj, []> >>()
   never_<GetAtPath<MyObj, ['foo', 'bar', 'nope']>>()
   never_<GetAtPath<MyObj, ['nope']>>()
@@ -31,10 +31,10 @@ test_(async () => {
   type Student = { name:string, age:18|19|20, student:true }
   type Granny = { name:string, age:90|91|92, student:false }
   const data =
-    { bool:t<boolean>(), 
+    { bool:t_<boolean>(), 
       foo:{ bar:{ win:'⭐️' }, fortyTwo:42 },
-      people:t<(Student|Granny)[]>(),
-      tuple:[t<Student>(), t<Granny>(), 42] } as const
+      people:t_<(Student|Granny)[]>(),
+      tuple:[t_<Student>(), t_<Granny>(), 42] } as const
 
   type E0 = GetAtPath <typeof data, ['foo', 'bar', 'win']>
   yes_< $Equal<E0,'⭐️'> >()
@@ -42,9 +42,9 @@ test_(async () => {
   const e0 = get(data, ['foo', 'bar', 'win'])
   is_<'⭐️'>(e0)
   is_<string>(e0)
-  is_<typeof e0>(t<'⭐️'>())
+  is_<typeof e0>(t_<'⭐️'>())
   // @ts-expect-error:✔︎
-  is_<typeof e0>(t<string>())
+  is_<typeof e0>(t_<string>())
 
   const e1 = get(data, ['foo', 'fortyTwo'])
   is_<42>(e1)
@@ -52,10 +52,10 @@ test_(async () => {
   const e2 = get(data, ['bool'])
   is_<boolean>(e2)
 
-  const e3 = get(data, ['people', t<number>(), 'name'])
+  const e3 = get(data, ['people', t_<number>(), 'name'])
   is_<string>(e3)
 
-  const e4 = get(data, ['people', t<number>(), 'student'])
+  const e4 = get(data, ['people', t_<number>(), 'student'])
   is_<boolean>(e4)
   // @ts-expect-error:✔︎
   is_<true>(e4)

@@ -3,7 +3,7 @@ import { $No, $Yes } from './verdicts'
 ; /* md */ `
 ## typist.comparators
 * *comparator types* for decidable evaluations*
-* they resolve to [assertives](#typist-assertives).
+* they resolve to verdicts.
 `// ----
 
 export type $Extends

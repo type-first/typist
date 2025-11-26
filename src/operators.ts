@@ -1,27 +1,58 @@
+; /* md */ `
+## typist.operators
+* return phantoms, sometimes with values.
+`
 
-export const type_
-  = <T>(v:unknown = null): T => v as T, 
-t_ = type_, t = t_ 
+; /* md */ `
+## typist.operators.phantom_
+* *minimal phantom values*
+* runtime-safe constructor to instantiate simple phantoms, an essential tool for *type-first programming*.
+* the technique can be characterized as effectively *"lying to the compiler"* by abusing the \`as\` operator, 
+  providing no value at all and instead using only the type information via the \`typeof\` operator.
+* useful when building with generic types and complex inference logic, symbolic proofs and test harnesses where concrete values are not needed.
+* allows you to pass pure types around using the same syntax as regular values.
+`
+export const phantom_
+  = <T>(x:unknown = null): T => x as T, 
+p_ = phantom_,
+type_ = phantom_, 
+t_ = phantom_,
+force_ = phantom_
 
 export const assign_
-  = <T>(v:T): T => v as T,
-a_ = assign_, a = a_
+  = <T>(v:T): T => v,
+a_ = assign_,
+as_ = assign_,
+widen_ = assign_
 
-export const widen_
-  = <const T>(v:T) => t_<T>(v),
-w_ = widen_, w = w_
-
-export const specify_
-  = <T>(v?:T) => <E extends T>(e_?:E) => t_<E>(v),
-s_ = specify_, s = s_
+export const like_ 
+  = <T>(x: T, y: T): T => t_<T>(),
+common_ = like_
 
 export const intersect_
-  = <T0, T1>(v0:T0, v1:T1) => t_<T0 & T1>()
+  = <T0, T1>(v0?:T0, v1?:T1) => t_<T0 & T1>()
 
-export const force_
-  = <T>(v:unknown = null) => t_<T>(v),
-f_ = force_, f = f_
+export const union_
+  = <T0, T1>(v0?:T0, v1?:T1) => t_<T0 | T1>()
 
 export const any_
-  = (v:any = null) => t_<any>(v),
+  = (v:any) => t_<any>(v),
 __ = any_
+
+export const resolve_ 
+  = <T>(x_?:T) => x_ as _r<T>,
+r_ = resolve_
+export type _r<T> 
+  = T extends (...args: any[]) => any ? T 
+  : T extends readonly [any, ...any[]] ? { [K in keyof T]: T[K] }
+  : T extends readonly any[] ? Array<T[number]>
+  : T extends object ? { [K in keyof T]: T[K] } : T
+
+export const flush_
+  = <T>(x_?:T) => x_ as _f<T>,
+f_ = flush_
+export type _f<T> 
+  = T extends (...args: any[]) => any ? T
+    : T extends readonly [any, ...any[]] ? { [K in keyof T]: _f<T[K]> }
+    : T extends readonly any[] ? Array<_f<T[number]>>
+    : T extends object ? { [K in keyof T]: _f<T[K]> } : T 

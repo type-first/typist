@@ -1,6 +1,7 @@
 {
   "version": "1.0.0",
   "name": "@typefirst/typist",
+  "publishConfig": { "access": "public" },
   "author": "santiago-elustondo",
   "description": "A minimal, compositional, and debug-friendly suite of type-level utilities for TypeScript",
   "keywords": [ "typescript", "type-level", "phantom-types", "static-analysis", "type-checking", "assertions", "symbolic", "compile-time", "zero-runtime" ],
