@@ -1,11 +1,5 @@
 import { $No, $Yes } from './verdicts'
 
-; /* md */ `
-## typist.comparators
-* *comparator types* for decidable evaluations*
-* they resolve to verdicts.
-`// ----
-
 export type $Extends
   < L, R > =
   [ L ] extends [ R ] ? $Yes 
