@@ -1,293 +1,245 @@
-<div align="center">
+# @typefirst/typist
 
-# 🎭 @typefirst/typist
+A minimal, composable toolkit for writing **type-level code, tests, and proofs** in TypeScript. Typist provides phantom values, assertion helpers, and verdict types so you can describe and check relationships purely at compile time—without adding any runtime cost.
 
-[![npm version](https://img.shields.io/npm/v/@typefirst/typist?style=flat-square)](https://www.npmjs.com/package/@typefirst/typist)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
-[![Zero Runtime](https://img.shields.io/badge/Runtime-Zero-00d4aa?style=flat-square)](#features)
-[![Bundle Size](https://img.shields.io/badge/Bundle-0kb-success?style=flat-square)](#features)
+- **Zero runtime:** helpers erase at emit time and perform no runtime work.
+- **Debuggable types:** verdicts carry messages and dumps to make compiler errors readable.
+- **Composable primitives:** build your own constraints, comparators, and test blocks.
+- **IDE-friendly:** signatures are small and designed to surface useful IntelliSense.
 
-**A minimal, compositional, and debug-friendly suite of type-level utilities for TypeScript**
+## Contents
 
-*Treats types as first-class values, leveraging the compiler's structural type system to encode symbolic verdicts, composable constraints, and static proofs.*
+- [Install](#install)
+- [Quick start](#quick-start)
+- [Concepts](#concepts)
+  - [Phantom values](#phantom-values)
+  - [Assertions](#assertions)
+  - [Verdicts and comparators](#verdicts-and-comparators)
+  - [Operators](#operators)
+  - [Test blocks](#test-blocks)
+- [Patterns and examples](#patterns-and-examples)
+- [API reference](#api-reference)
+- [Project layout](#project-layout)
+- [Contributing](#contributing)
+- [License](#license)
 
-[Installation](#-installation) • [Quick Start](#-quick-start) • [API Reference](#-api-reference) • [Examples](#-examples)
+## Install
 
-</div>
-
----
-
-## ✨ Features
-
-- 🎭 **Phantom Types** – Represent symbolic or nominal values without runtime cost
-- 🔍 **Type Assertions** – Test assignability, identity, and structure in-place  
-- ⚖️ **Verdict Encoding** – Static error annotation, debugging, and type introspection
-- 🧩 **Symbolic Inference** – Type comparison as first-class idioms
-- 🚀 **Zero Runtime** – Pure compile-time type operations
-- 📦 **ESM Ready** – Modern module system support
-- 🎯 **IDE Friendly** – Rich IntelliSense and error reporting
-
-## 📦 Installation
+Typist is type-only and ships as an ESM module.
 
 ```bash
 npm install @typefirst/typist
-```
-
-```bash
+# or
 pnpm add @typefirst/typist
-```
-
-```bash
 yarn add @typefirst/typist
 ```
 
-> **Requirements:** TypeScript 4.9+ and Node.js 18+
+Requirements: TypeScript 4.9+ and Node.js 18+.
 
-## 🚀 Quick Start
+## Quick start
+
+Use phantom values to work with types as if they were values, and assertions to make the compiler validate relationships.
 
 ```typescript
-import { t, is_, $Equal, yes_, never_ } from '@typefirst/typist'
+import { t_, is_, yes_, never_, $Equal } from '@typefirst/typist'
 
-// Create phantom values for type manipulation
-const user = t<{ name: string; age: number }>()
+// Create a phantom value for type-only work
+const user = t_< { name: string; age: number } >()
 
-// Test type relationships
-is_<string>(user.name)                    // ✓ Type assertion
-yes_<$Equal<number, typeof user.age>>()   // ✓ Equality check  
-never_<string & number>()                 // ✓ Impossibility proof
+// Check assignability
+is_<string>(user.name)          // compiles
+// is_<number>(user.name)       // compiler error
+
+// Encode decisions as verdicts
+type NameIsString = $Equal<typeof user.name, string> // $Yes
+type AgeIsString  = $Equal<typeof user.age, string>  // $No<'not-equal', [...]>
+
+// Assert verdicts
+yes_<NameIsString>()
+never_<AgeIsString>() // fails if AgeIsString is not `never`
 ```
 
----
+## Concepts
 
-## 📚 API Reference
+### Phantom values
 
-### 🎭 Phantom Types
-
-Create "values" of types purely for type-checking without runtime overhead:
+Phantoms give you a value-shaped handle for any type without needing data at runtime.
 
 ```typescript
-import { t, type_ } from '@typefirst/typist'
+import { t_, type_, phantom_, force_ } from '@typefirst/typist'
 
-type User = { name: string; id: number }
-const phantom = t<User>()        // Phantom User value
-const typed = type_<string>()    // Alternative syntax
-
-// Use phantom values in type operations
-is_<string>(phantom.name)        // ✓ Access properties for type checking
+const phantomUser = t_<User>()     // prefer t_ / type_ / phantom_ aliases
+const forced = force_<42>()        // narrows a value unsafely; still no runtime work
 ```
 
-**Available operators:**
-- `t<T>()` / `type_<T>()` – Create phantom type instance
-- `assign_<T>(v)` – Assign with type constraint
-- `widen_<T>(v)` – Widen to const assertion
-- `specify_<T>()` – Create type specializer
-- `force_<T>()` – Force type cast
+All phantom constructors return their input cast to the requested type; they are intentionally no-ops at runtime.
 
-### 🔍 Assertions
+### Assertions
 
-Essential static type-level assertion kit for unit tests and debugging:
+Assertion helpers are tiny functions that exist only to inform the type checker. Each call either compiles or produces a readable compiler error.
 
 ```typescript
-import { 
-  is_, assignable_, has_, extends_, 
-  never_, yes_, decidable_ 
-} from '@typefirst/typist/assertions'
+import { is_, assignable_, has_, extends_, instance_, never_, yes_, no_, assert_, check_ } from '@typefirst/typist/assertions'
 
-// Type compatibility checks
-is_<string>("hello")                    // ✓ Direct assignment test
-assignable_<number>(42)                 // ✓ Assignability test
-has_<"name", string>({ name: "Alice" }) // ✓ Property existence check
-extends_<"foo", string>()               // ✓ Subtype relationship
-never_<string & number>()               // ✓ Impossibility proof
+is_<string>('hello')
+assignable_<number>(42)
+has_<'name', string>({ name: 'Ada' })
+extends_<Array<any>, any[]>()
+instance_<abstract new () => Date>()
 
-// Verdict assertions
-yes_<$Equal<42, 42>>()                  // ✓ Assert positive verdict
-decidable_<$Equal<string, number>>()    // ✓ Assert decidable comparison
+// verdict assertions
+yes_<$Equal<1, 1>>()                    // passes
+no_<$No<'not-equal', [1, 2]>>()         // passes
+assert_<true>()                         // accepts `true | $Yes`
+check_({ expected: 'a' as const, actual: 'a' as const })
+never_<string & number>()               // expects `never`
 ```
 
-### ⚖️ Verdicts
+All helpers erase from output; they do not evaluate the values passed in.
 
-Symbolic markers for encoding static type comparison results:
+### Verdicts and comparators
 
-```typescript
-import type { $Yes, $No, $Maybe, $Verdict } from '@typefirst/typist/verdicts'
-
-// Verdict types encode comparison results
-type $Verdict = { $___verdict: boolean }
-
-type $Yes = {
-  $___verdict: true
-  $___type_error: false 
-}
-
-type $No<Key extends string, Dump extends readonly any[] = []> = {
-  $___verdict: false
-  $___type_error: true
-  $___type_error_key: Key
-  $___dump: Dump
-}
-
-type $Maybe = $Verdict & ($Yes | $No<string>)
-```
-
-**Usage in comparisons:**
-```typescript
-type Success = $Equal<42, 42>          // → $Yes
-type Failure = $Equal<string, number>  // → $No<"not-equal", [string, number]>
-```
-
-### 🧩 Comparators
-
-Static binary type-level comparisons with rich error reporting:
+Verdicts are descriptive results of type comparisons. The built-in comparators return them so you get meaningful compiler feedback.
 
 ```typescript
+import type { $Yes, $No, $Verdict } from '@typefirst/typist/verdicts'
 import type { $Extends, $Equal } from '@typefirst/typist/comparators'
 
-// Structural subtype test
-type $Extends<L, R> = [L] extends [R] 
-  ? $Yes 
-  : $No<'right-does-not-extend-left', [L, R]>
+type OK = $Extends<'x', string>           // $Yes
+type Nope = $Equal<{ a: 1 }, { a: 2 }>    // $No<'not-equal', [...]>
 
-// Symmetric assignability (deep identity)  
-type $Equal<T1, T2> = 
+type $Extends<L, R> =
+  [L] extends [R] ? $Yes : $No<'right-does-not-extend-left', [L, R]>
+
+type $Equal<T1, T2> =
   ([T1] extends [T2] ? [T2] extends [T1] ? true : false : false) extends true
-    ? $Yes 
+    ? $Yes
     : $No<'not-equal', [T1, T2]>
 ```
 
-**Examples:**
-```typescript
-type IsString = $Extends<"hello", string>        // → $Yes
-type IsExact = $Equal<{ a: 1 }, { a: 1 }>        // → $Yes  
-type NotEqual = $Equal<{ a: 1 }, { a: number }>  // → $No<"not-equal", [...]>
-```
+You can define your own comparators by returning `$Yes` or `$No`.
 
-### 🧪 Test Blocks
+### Operators
 
-Non-executing wrappers for static test blocks and symbolic validations:
+Operators are small utilities for constructing or massaging types.
+
+- `assign_ / a_ / as_ / widen_` – identity helpers for inference and const-widening.
+- `like_ / common_` – unify two values to a common inferred type.
+- `intersect_`, `union_` – create phantom intersections/unions.
+- `any_ / __` – return a phantom `any`.
+- `resolve_ / r_` with `_r<T>` – resolve readonly tuples/objects/functions to mutable shapes.
+- `flush_ / f_` with `_f<T>` – deep version of `resolve_` (recursively flushes tuples/objects).
+
+All return phantoms; none perform runtime logic.
+
+### Test blocks
+
+`test_`, `example_`, and `proof_` wrap type-level checks to keep scopes tidy while still returning typed values you can re-use.
 
 ```typescript
 import { test_, example_, proof_ } from '@typefirst/typist/blocks'
+import { yes_, never_, $Equal } from '@typefirst/typist'
 
-test_('type equality checks', () => {
+test_('type equality', () => {
   yes_<$Equal<42, 42>>()
-  never_<$Equal<string, number>>()
-})
-
-const myExample = example_('string literal behavior', () => {
-  const str = 'hello' as const
-  extends_<string, typeof str>()  // ✓ "hello" extends string
-  // extends_<typeof str, string>() // ❌ Would fail - string doesn't extend "hello"
-  return str
-})
-
-proof_(() => {
-  // Static proof that intersection with never is never
-  never_<string & never>()
-  never_<{ a: string } & never>()
+  never_<$Equal<string, number>>() // compiler error if not `never`
 })
 ```
 
----
+## Patterns and examples
 
-## 💡 Examples
+### Path-based access
 
-### Path-based Object Access
+From `examples/get-path.ts`, a type-safe object path helper backed by static checks:
 
 ```typescript
-import { $Equal, is_, never_, t, test_, yes_ } from '@typefirst/typist'
+import { $Equal, is_, never_, t_, test_, yes_ } from '@typefirst/typist'
 
-type GetAtPath<Obj, Path extends readonly any[]> =
+export type GetAtPath<Obj, Path extends readonly any[]> =
   Path extends readonly [infer Head, ...infer Tail]
     ? Head extends keyof Obj
-      ? Tail extends readonly any[]
-        ? GetAtPath<Obj[Head], Tail>
-        : Obj[Head]
-      : Obj extends readonly (infer Elem)[]
-        ? GetAtPath<Elem, Path>
-        : never
+      ? Tail extends readonly any[] ? GetAtPath<Obj[Head], Tail> : Obj[Head]
+      : Obj extends readonly (infer Elem)[] ? GetAtPath<Elem, Path> : never
     : Obj
 
-test_('path-based access validation', () => {
-  type MyObj = { 
-    foo: { bar: { baz: string }, qux: number }, 
-    corge: boolean 
-  }
-  
-  is_<GetAtPath<MyObj, ['foo', 'bar', 'baz']>>(t<string>()) 
-  is_<GetAtPath<MyObj, ['foo', 'qux']>>(t<number>())
-  is_<GetAtPath<MyObj, ['corge']>>(t<boolean>())
-  yes_<$Equal<MyObj, GetAtPath<MyObj, []>>>()
-  
-  never_<GetAtPath<MyObj, ['foo', 'bar', 'nope']>>()
-  never_<GetAtPath<MyObj, ['invalid']>>()
+test_(() => {
+  type Example = { foo: { bar: { baz: string }, qux: number }, corge: boolean }
+  is_<GetAtPath<Example, ['foo', 'bar', 'baz']>>(t_<string>())
+  yes_<$Equal<Example, GetAtPath<Example, []>>>()
+  never_<GetAtPath<Example, ['foo', 'bar', 'missing']>>()
 })
 ```
 
-### Type-Safe Configuration Validation
+### Type-level testing workflow
+
+Add `.ts` files that import typist helpers and run `npm test` (which runs `tsc --noEmit`). Any failed assertion surfaces as a TypeScript error. No runtime test runner is required.
+
+```bash
+npm run test
+```
+
+### Designing your own comparators
+
+Return `$Yes` or `$No` from conditional types to encode rich error messages:
 
 ```typescript
-import { has_, extends_, yes_, $Equal } from '@typefirst/typist'
+import type { $Yes, $No } from '@typefirst/typist'
 
-test_('configuration type validation', () => {
-  type Config = {
-    database: { host: string; port: number }
-    cache: { enabled: boolean; ttl: number }
-  }
-  
-  const config = t<Config>()
-  
-  has_<'database', Config['database']>(config)
-  has_<'host', string>(config.database)
-  extends_<number, typeof config.database.port>()
-  yes_<$Equal<boolean, typeof config.cache.enabled>>()
-})
+type $IsRecord<T> =
+  T extends object ? $Yes : $No<'not-a-record', [T]>
 ```
 
----
+## Documentation
 
-## 🎯 Use Cases
+### 📚 Core Documentation
+- [API Reference](docs/api.md) – Complete API documentation with examples
+- [Usage Guide](docs/guide.md) – In-depth patterns and best practices
+- [Real-World Examples](docs/examples.md) – Practical usage scenarios
 
-- **📋 Type-Level Unit Testing** – Write comprehensive type tests alongside your code
-- **🔍 Static Analysis** – Build compile-time validation and constraint systems  
-- **📚 API Documentation** – Encode type relationships directly in your interfaces
-- **🛡️ Type Safety** – Prove impossibility and enforce invariants at compile time
-- **🔧 Library Development** – Create robust type-level APIs with rich error messages
-- **🎓 Learning TypeScript** – Understand advanced type system concepts through examples
+### 🚀 Getting Started
+- [Migration Guide](docs/migration.md) – Migrate from runtime to type-level validation
+- [FAQ](docs/faq.md) – Frequently asked questions and troubleshooting
 
----
+### 🤝 Contributing
+- [Contributing Guide](docs/contributing.md) – Development and contribution guidelines
+- [Changelog](CHANGELOG.md) – Version history and breaking changes
 
-## 🏗️ Project Structure
+## Examples
 
+See the [examples directory](examples/) for complete working examples:
+
+- [Path-based object access](examples/get-path.ts) – Type-safe deep property access
+
+## Zero Runtime
+
+All typist utilities are designed for compile-time use only. The library has **zero runtime overhead** – phantom types, assertions, and comparisons exist only during TypeScript compilation and are completely eliminated from the final JavaScript bundle.
+
+```typescript
+// This code:
+const user = t_<{ name: string }>()
+is_<string>(user.name)
+
+// Compiles to:
+// (empty - completely eliminated)
 ```
-packages/typist/
-├── index.ts          # Main exports
-├── assertions.ts     # Type assertion utilities  
-├── comparators.ts    # Type comparison operations
-├── verdicts.ts       # Verdict type definitions
-├── operators.ts      # Phantom type operators
-├── blocks.ts         # Test block utilities
-├── phantom.ts        # Phantom type helpers
-└── package.json      # Package configuration
-```
+
+## Why typist?
+
+- **Type-First Development**: Build with types as primary design artifacts
+- **Static Verification**: Catch type errors at compile time with rich diagnostics
+- **Zero Cost**: No runtime performance impact or bundle size increase
+- **Composable**: Small, focused utilities that work together seamlessly
+- **Debug-Friendly**: Clear error messages and IDE integration
+- **Standards-Based**: Uses standard TypeScript features without experimental APIs
+
+## License
+
+MIT © [santiago-elustondo](https://github.com/santiago-elustondo)
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](docs/contributing.md) for guidelines.
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](../../CONTRIBUTING.md) for details.
-
-## 📄 License
-
-MIT © [type-first](https://github.com/typefirst)
-
----
-
-<div align="center">
-
-**[⬆ Back to Top](#-type-firsttypist)**
-
-Made with ❤️ by the [type-first](https://github.com/typefirst) team
-
-</div>
+**[View API Documentation](docs/api.md)** | **[See Examples](examples/)** | **[Read Guide](docs/guide.md)**

@@ -7,7 +7,6 @@ force_ = phantom_
 
 export const assign_
   = <T>(v:T): T => v,
-a_ = assign_,
 as_ = assign_,
 widen_ = assign_
 
