@@ -10,18 +10,17 @@ export const assign_
 as_ = assign_,
 widen_ = assign_
 
-export const like_ 
-  = <T>(x: T, y: T): T => t_<T>(),
-common_ = like_
-
 export const intersect_
   = <T0, T1>(v0?:T0, v1?:T1) => t_<T0 & T1>()
 
 export const union_
   = <T0, T1>(v0?:T0, v1?:T1) => t_<T0 | T1>()
 
+export const nope_
+  = (v:unknown) => t_<never>(v)
+
 export const any_
-  = (v:any) => t_<any>(v),
+  = (v:unknown) => t_<any>(v),
 __ = any_
 
 export const resolve_ 

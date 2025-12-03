@@ -43,7 +43,7 @@ test_(async () => {
   is_<'⭐️'>(e0)
   is_<string>(e0)
   is_<typeof e0>(t_<'⭐️'>())
-  // @ts-expect-error:✔︎
+  // @ts-expect-error:✔
   is_<typeof e0>(t_<string>())
 
   const e1 = get(data, ['foo', 'fortyTwo'])
