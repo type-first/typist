@@ -39,8 +39,9 @@ type MexicanPhoneNumberThreeDigitAreaCode
     readonly ['$:struct:mex:area-3']:unique symbol }
 
 type MexicanPhoneNumber
-  = MexicanPhoneNumberTwoDigitAreaCode
-  | MexicanPhoneNumberThreeDigitAreaCode
+  = ( MexicanPhoneNumberTwoDigitAreaCode
+    | MexicanPhoneNumberThreeDigitAreaCode )
+  & { readonly ['$:struct:mex']:unique symbol }
 
 type ValidTorontoAreaCode = '416'|'647'|'437'
 type ValidMontrealAreaCode = '514'|'438'
@@ -109,12 +110,12 @@ function phoneNumber
   ( country:ValidMexicanPhoneNumberTwoDigitAreaCode['country'], 
     area:ValidMexicanPhoneNumberTwoDigitAreaCode['area'], 
     exchange:ValidMexicanPhoneNumberTwoDigitAreaCode['exchange'], 
-    line:ValidMexicanPhoneNumberTwoDigitAreaCode['line'] ):ValidMexicanPhoneNumberTwoDigitAreaCode
+    line:ValidMexicanPhoneNumberTwoDigitAreaCode['line'] ):ValidMexicanPhoneNumber
 function phoneNumber 
   ( country:ValidMexicanPhoneNumberThreeDigitAreaCode['country'], 
     area:ValidMexicanPhoneNumberThreeDigitAreaCode['area'], 
     exchange:ValidMexicanPhoneNumberThreeDigitAreaCode['exchange'], 
-    line:ValidMexicanPhoneNumberThreeDigitAreaCode['line'] ):ValidMexicanPhoneNumberThreeDigitAreaCode
+    line:ValidMexicanPhoneNumberThreeDigitAreaCode['line'] ):ValidMexicanPhoneNumber
 function phoneNumber 
   ( country:NANPPhoneNumber['country'], 
     area:NANPPhoneNumber['area'], 
@@ -124,12 +125,12 @@ function phoneNumber
   ( country:MexicanPhoneNumberTwoDigitAreaCode['country'], 
     area:MexicanPhoneNumberTwoDigitAreaCode['area'], 
     exchange:MexicanPhoneNumberTwoDigitAreaCode['exchange'], 
-    line:MexicanPhoneNumberTwoDigitAreaCode['line'] ):MexicanPhoneNumberTwoDigitAreaCode
+    line:MexicanPhoneNumberTwoDigitAreaCode['line'] ):MexicanPhoneNumber
 function phoneNumber 
   ( country:MexicanPhoneNumberThreeDigitAreaCode['country'], 
     area:MexicanPhoneNumberThreeDigitAreaCode['area'], 
     exchange:MexicanPhoneNumberThreeDigitAreaCode['exchange'], 
-    line:MexicanPhoneNumberThreeDigitAreaCode['line'] ):MexicanPhoneNumberThreeDigitAreaCode
+    line:MexicanPhoneNumberThreeDigitAreaCode['line'] ):MexicanPhoneNumber
 function phoneNumber 
   ( country:PhoneNumber['country'], 
     area:PhoneNumber['area'], 
@@ -144,9 +145,8 @@ is_<ValidCanadianPhoneNumber>(nanp)
 
 const validMex = phoneNumber('52', '55', '1234', '5678')
 is_<MexicanPhoneNumber>(validMex)
-// @ts-expect-error - validMex doesn't resolve to ValidMexicanPhoneNumber
 is_<ValidMexicanPhoneNumber>(validMex)
-is_<ValidMexicanPhoneNumberTwoDigitAreaCode>(validMex)
+is_<ValidMexicanPhoneNumber>(validMex)
 // @ts-expect-error
 is_<NANPPhoneNumber>(validMex)
 
@@ -189,7 +189,6 @@ sendMexSms(validCad)
 
 // @ts-expect-error
 sendValidSms(nanp)
-// @ts-expect-error - validMex doesn't resolve to ValidMexicanPhoneNumber
 sendValidSms(validMex)
 sendValidSms(validCad)
 
@@ -201,7 +200,6 @@ sendValidCanadianSms(validCad)
 
 // @ts-expect-error
 sendValidMexicanSms(nanp)
-// @ts-expect-error - validMex doesn't resolve to ValidMexicanPhoneNumber  
 sendValidMexicanSms(validMex)
 // @ts-expect-error
 sendValidMexicanSms(validCad)
@@ -256,9 +254,7 @@ sendNanpSms(p117)
 // Mexican phone number tests
 sendMexSms(p115)
 sendMexSms(p116)
-// @ts-expect-error - Mexican numbers don't resolve to ValidMexicanPhoneNumber
 sendValidMexicanSms(p115)
-// @ts-expect-error - Mexican numbers don't resolve to ValidMexicanPhoneNumber
 sendValidMexicanSms(p116)
 
 // More complex examples with different patterns
@@ -278,9 +274,7 @@ is_<ValidCanadianPhoneNumber>(toronto1)
 is_<ValidCanadianPhoneNumber>(toronto2)
 is_<ValidCanadianPhoneNumber>(montreal1)
 is_<ValidCanadianPhoneNumber>(montreal2)
-// @ts-expect-error - Mexican numbers don't resolve to ValidMexicanPhoneNumber
 is_<ValidMexicanPhoneNumber>(mexicoCity1)
-// @ts-expect-error - Mexican numbers don't resolve to ValidMexicanPhoneNumber
 is_<ValidMexicanPhoneNumber>(tijuana1)
 
 // Sending messages to different regions
@@ -288,9 +282,7 @@ sendValidCanadianSms(toronto1)
 sendValidCanadianSms(toronto2)
 sendValidCanadianSms(montreal1)
 sendValidCanadianSms(montreal2)
-// @ts-expect-error - Mexican numbers don't resolve to ValidMexicanPhoneNumber
 sendValidMexicanSms(mexicoCity1)
-// @ts-expect-error - Mexican numbers don't resolve to ValidMexicanPhoneNumber
 sendValidMexicanSms(tijuana1)
 
 // Additional phone number variations
