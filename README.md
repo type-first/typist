@@ -143,6 +143,21 @@ import { yes_, never_, $Equal } from '@typefirst/typist'
 test_('type equality', () => {
   yes_<$Equal<42, 42>>()
   never_<$Equal<string, number>>() // compiler error if not `never`
+  never_<$Equal<string, number>>()
+})
+
+const myExample = example_('string literal behavior', () => {
+  const str = 'hello' as const
+  extends_<string, typeof str>() // 'hello' :< string
+  // @ts-expect-error:✔︎ string !< 'hello'
+  extends_<typeof str, string>()
+  return str
+})
+
+proof_(() => {
+  // Static proof that intersection with never is never
+  never_<string & never>()
+  never_<{ a: string } & never>()
 })
 ```
 
@@ -243,3 +258,10 @@ Contributions are welcome! Please see [CONTRIBUTING.md](docs/contributing.md) fo
 ---
 
 **[View API Documentation](docs/api.md)** | **[See Examples](examples/)** | **[Read Guide](docs/guide.md)**
+<div align="center">
+
+**[⬆ Back to Top](#-type-firsttypist)**
+
+Made with ❤️ by the [type-first](https://github.com/typefirst) team
+
+</div>
