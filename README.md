@@ -2,6 +2,8 @@
 
 <img src="banner.png" alt="Typist Logo"/>
 
+### Primitive Type-First Utilities for TypeScript
+
 *Show what your types are made of*
 
 [![npm version](https://badge.fury.io/js/%40typefirst%2Ftypist.svg)](https://badge.fury.io/js/%40typefirst%2Ftypist)
