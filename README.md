@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="logo.png" alt="Typist Logo" width="200"/>
+
 # 🔍 Typist
 
 ### Primitive Type-First Utilities for TypeScript
