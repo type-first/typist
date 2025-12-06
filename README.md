@@ -4,12 +4,14 @@
 
 Typist is a collection of small, focused utilities for type-level debugging and static validation in TypeScript.
 
-It enables:
-* Compiler-enforced static assertions
-* Phantom operators for flexible type transportation and inference logic
-* Recursive and conditional type inspection techniques with customizable diagnostic type-level metadata
-* Type materialization utilities for resolving complex inferred types
-* Block-based grouping for type-level test suites
+- 🔍 **Type Assertions** – Compiler-enforced static assertions for compilable proofs
+- 🧱 **Type Materialization** - Utilities for resolving complex inferred types
+- 🎭 **Phantom Types** – Runtime-agnostic operators for flexible type transportation and inference logic
+- ⚖️ **Verdict Encoding** – Rich error reporting techniques for recursive and conditional type inspection techniques with customizable diagnostic type-level metadata
+- 🧩 **Symbolic Inference** – Type manipulation as first-class operations
+- 🫙 **Scope Blocks** - Block-based grouping for type-level test suites
+- 🚀 **Zero Runtime** – Pure compile-time operations
+- 📦 **ESM Ready** – Modern module system support
 
 ### Essential Primitives for Type-First Development
 
