@@ -1,103 +1,179 @@
-# Typist: Primitive Type-First Utilities
+<div align="center">
+
+# 🔍 Typist
+
+### Primitive Type-First Utilities for TypeScript
 
 *Show what your types are made of*
 
+[![npm version](https://badge.fury.io/js/%40typefirst%2Ftypist.svg)](https://badge.fury.io/js/%40typefirst%2Ftypist)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@typefirst/typist?label=bundle%20size&color=success)](https://bundlephobia.com/package/@typefirst/typist)
+[![GitHub Issues](https://img.shields.io/github/issues/type-first/typist)](https://github.com/type-first/typist/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/type-first/typist?style=social)](https://github.com/type-first/typist)
+
+---
+
+**A minimal, compositional, and debug-friendly suite of type-level utilities for TypeScript**
+
+[Getting Started](#-installation) • [API Reference](#-api-reference) • [Examples](#examples) • [Contributing](https://github.com/type-first/typist/blob/main/CONTRIBUTING.md)
+
+</div>
+
+## ✨ Features
+
 Typist is a collection of small, focused utilities for type-level debugging and static validation in TypeScript.
 
-- 🔍 **Type Assertions** – Compiler-enforced static assertions for compilable proofs
-- 🧱 **Type Materialization** - Utilities for resolving complex inferred types
-- 🎭 **Phantom Types** – Runtime-agnostic operators for flexible type transportation and inference logic
-- ⚖️ **Verdict Encoding** – Rich error reporting techniques for recursive and conditional type inspection techniques with customizable diagnostic type-level metadata
-- 🧩 **Symbolic Inference** – Type manipulation as first-class operations
-- 🫙 **Scope Blocks** - Block-based grouping for type-level test suites
-- 🚀 **Zero Runtime** – Pure compile-time operations
-- 📦 **ESM Ready** – Modern module system support
+| Feature | Description |
+|---------|-------------|
+| 🔍 **Type Assertions** | Compiler-enforced static assertions for compilable proofs |
+| 🧱 **Type Materialization** | Utilities for resolving complex inferred types |
+| 🎭 **Phantom Types** | Runtime-agnostic operators for flexible type transportation and inference logic |
+| ⚖️ **Verdict Encoding** | Rich error reporting techniques for recursive and conditional type inspection with customizable diagnostic metadata |
+| 🧩 **Symbolic Inference** | Type manipulation as first-class operations |
+| 🫙 **Scope Blocks** | Block-based grouping for type-level test suites |
+| 🚀 **Zero Runtime** | Pure compile-time operations |
+| 📦 **ESM Ready** | Modern module system support |
 
-### Essential Primitives for Type-First Development
+## 🎯 Why Typist?
 
-Typist exists to support a type‑first approach to software development: leveraging the compiler as an active analytical tool, enforcing architectural constraints, validating domain models, and enabling precise, inference‑driven workflows. This can significantly **strengthen code generation capability**.
+Typist exists to support a **type‑first approach** to software development: leveraging the compiler as an active analytical tool, enforcing architectural constraints, validating domain models, and enabling precise, inference‑driven workflows. This can significantly **strengthen code generation capability**.
 
-### Zero Cost
+### 💡 Zero Cost Abstraction
 
-Typist has no dependencies, virtually zero runtime overhead, and bundles less than 1KB gzipped and uglified.
+- **No dependencies** – Completely standalone
+- **Virtually zero runtime overhead** – Pure compile-time operations
+- **Tiny bundle** – Less than 1KB gzipped and minified
+- **TypeScript native** – Built for TypeScript 4.9+
 
-## API Reference
+## 📦 Installation
 
-### Assertions
+```bash
+# npm
+npm install @typefirst/typist
 
-Assertions are compile-time guarantees.
-Each is a function that returns `void` and causes a TypeScript error if its condition is false.
+# yarn  
+yarn add @typefirst/typist
 
-#### `is_<Type>(thing)`
+# pnpm
+pnpm add @typefirst/typist
+```
+
+## 🚀 Quick Start
+
+```typescript
+import { is_, has_, phantom_, example_ } from '@typefirst/typist'
+
+// Type assertions at compile-time
+const user = { name: 'Alice', age: 30 }
+is_<{ name: string; age: number }>(user) // ✅ Passes
+has_<'name', string>(user)              // ✅ Passes
+
+// Phantom types for type transportation
+type User = { id: string; email: string }
+const userPhantom = phantom_<User>()
+is_<User>(userPhantom)                  // ✅ Passes
+
+// Scoped type testing
+const result = example_('user validation', () => {
+  const validUser = { id: 'u123', email: 'alice@example.com' }
+  is_<User>(validUser)
+  return validUser
+})
+```
+
+## 📚 API Reference
+
+### 🔒 Assertions
+
+Assertions are compile-time guarantees. Each is a function that returns `void` and causes a TypeScript error if its condition is false.
+
+<details>
+<summary><code>is_&lt;Type&gt;(thing)</code> – Type assignability assertion</summary>
 
 Asserts that `thing` is assignable to `Type`.
 
-Alias: `assignable_`
+**Alias:** `assignable_`
 
-```ts
+```typescript
 const timestamp = Date.now()
 
-is_<number>(timestamp)
+is_<number>(timestamp)     // ✅ Passes
 
 // @ts-expect-error
-is_<string>(timestamp)
+is_<string>(timestamp)     // ❌ Fails at compile time
 ```
 
-#### `has_<Key, Value?>(thing)`
+</details>
+
+<details>
+<summary><code>has_&lt;Key, Value?&gt;(thing)</code> – Property assertion</summary>
 
 Asserts that `thing` has a property `Key`, optionally with value type `Value`.
 
-```ts
-const person = { name:'ponyboy', age:15 }
+```typescript
+const person = { name: 'ponyboy', age: 15 }
 
-has_<'age'>(person)
-has_<'name', string>(person)
+has_<'age'>(person)           // ✅ Has property 'age'
+has_<'name', string>(person)  // ✅ Has property 'name' of type string
 
 // @ts-expect-error
-has_<"email">(person)
+has_<"email">(person)         // ❌ No 'email' property
 ```
 
-#### `extends_<A, B>()`
+</details>
+
+<details>
+<summary><code>extends_&lt;A, B&gt;()</code> – Type relationship assertion</summary>
 
 Asserts that `A extends B`.
 
-```ts
-type User = { email:string, admin:boolean }
-type AdminUser = User & { admin:true }
+```typescript
+type User = { email: string, admin: boolean }
+type AdminUser = User & { admin: true }
 
-extends_<AdminUser, User>()
+extends_<AdminUser, User>()   // ✅ AdminUser extends User
 
-const user
-  = { email:'ponyboycurtis67@hotmail.com', 
-      admin:false } as const
+const user = { 
+  email: 'ponyboycurtis67@hotmail.com', 
+  admin: false 
+} as const
 
-extends_<typeof user, User>()
+extends_<typeof user, User>() // ✅ Passes
 
 // @ts-expect-error
-extends_<typeof user, AdminUser>()
+extends_<typeof user, AdminUser>() // ❌ admin is false, not true
 ```
 
-#### `instance_<Ctor>(value)`
+</details>
+
+<details>
+<summary><code>instance_&lt;Ctor&gt;(value)</code> – Instance assertion</summary>
 
 Asserts that `value` is an instance of constructor type `Ctor`.
 
-```ts
+```typescript
 class Dog {}
 class Cat {}
 
 const dog = new Dog()
 
-instance_<Dog>(dog)
+instance_<Dog>(dog)    // ✅ Passes
 
 // @ts-expect-error
-instance_<Cat>(dog)
+instance_<Cat>(dog)    // ❌ dog is not a Cat instance
 ```
 
-#### `never_<T>()`
+</details>
+
+<details>
+<summary><code>never_&lt;T&gt;()</code> – Never type assertion</summary>
 
 Asserts that a type resolves to `never`.
 
-```ts
+```typescript
 type Impossible = Extract<'a', 'b'>
 
 never_<Impossible>()
