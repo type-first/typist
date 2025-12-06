@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo.png" alt="Typist Logo" width="200"/>
+<img src="banner.png" alt="Typist Logo" width="200"/>
 
 # 🔍 Typist
 
