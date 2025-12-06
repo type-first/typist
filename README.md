@@ -2,8 +2,6 @@
 
 <img src="banner.png" alt="Typist Logo"/>
 
-# 🔍 Typist
-
 ### Primitive Type-First Utilities for TypeScript
 
 *Show what your types are made of*
