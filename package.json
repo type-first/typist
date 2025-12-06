@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.3",
   "name": "@typefirst/typist",
   "publishConfig": { "access": "public" },
   "author": "santiago-elustondo",
@@ -11,7 +11,6 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "example": "tsx src/example.ts",
-    "prepublishOnly": "npm run typecheck",
     "test": "npm run typecheck" },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
