@@ -4,7 +4,7 @@
 
 ### Primitive Type-First Utilities for TypeScript
 
-## *Show what your types are made of*
+*Show what your types are made of*
 
 [![npm version](https://badge.fury.io/js/%40typefirst%2Ftypist.svg)](https://badge.fury.io/js/%40typefirst%2Ftypist)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9+-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
