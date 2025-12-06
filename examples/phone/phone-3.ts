@@ -1,42 +1,42 @@
 import { is_ } from '../../src'
 import { __, assign_ } from '../../src/operators'
 
+type Mask
+  < CountryCode extends string, 
+    AreaCode extends string > 
+  = `+${CountryCode} (${AreaCode}) ${string}-${string}`
+
 type Digit = '0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'
 type TwoDigit = `${Digit}${Digit}`
 type ThreeDigit = `${Digit}${Digit}${Digit}`
 type FourDigit = `${Digit}${Digit}${Digit}${Digit}`
 
 type PhoneNumber
-  = string & 
-  { country:Digit|TwoDigit
-    area:TwoDigit|ThreeDigit
-    exchange:ThreeDigit|FourDigit
-    line:FourDigit
+  < CountryCode extends Digit|TwoDigit = Digit|TwoDigit,
+    AreaCode extends TwoDigit|ThreeDigit = TwoDigit|ThreeDigit,
+    ExchangeCode extends ThreeDigit|FourDigit = ThreeDigit|FourDigit,
+    LineNumber extends FourDigit = FourDigit >
+  = Mask<CountryCode, AreaCode> & 
+  { country:CountryCode
+    area:AreaCode
+    exchange:ExchangeCode
+    line:LineNumber
     readonly ['$:phone']:unique symbol }
 
 type NANPPhoneNumber
-  = PhoneNumber &
-  { country:'1' 
-    area:ThreeDigit
-    exchange:ThreeDigit
-    line:FourDigit
-    readonly ['$:struct:nanp']:unique symbol }
+  < AreaCode extends ThreeDigit = ThreeDigit >
+  = PhoneNumber<'1', AreaCode, ThreeDigit, FourDigit> 
+  & { readonly ['$:struct:nanp']:unique symbol }
 
 type MexicanPhoneNumberTwoDigitAreaCode
-  = PhoneNumber &
-  { country:'52'
-    area:TwoDigit
-    exchange:FourDigit
-    line:FourDigit
-    readonly ['$:struct:mex:area-2']:unique symbol }
+  < AreaCode extends TwoDigit = TwoDigit >
+  = PhoneNumber<'52', AreaCode, FourDigit, FourDigit> 
+  & { readonly ['$:struct:mex:area-2']:unique symbol }
 
 type MexicanPhoneNumberThreeDigitAreaCode
-  = PhoneNumber &
-  { country:'52'
-    area:ThreeDigit
-    exchange:ThreeDigit
-    line:FourDigit
-    readonly ['$:struct:mex:area-3']:unique symbol }
+  < AreaCode extends ThreeDigit = ThreeDigit >
+  = PhoneNumber<'52', AreaCode, ThreeDigit, FourDigit> 
+  & { readonly ['$:struct:mex:area-3']:unique symbol }
 
 type MexicanPhoneNumber
   = ( MexicanPhoneNumberTwoDigitAreaCode
@@ -62,13 +62,11 @@ type Valid
   = { readonly ['$:valid']:unique symbol }
 
 type ValidCanadianPhoneNumber 
-  = NANPPhoneNumber & Valid
-  & { area:ValidCanadianAreaCode }
+  = NANPPhoneNumber<ValidCanadianAreaCode> & Valid
   & { readonly ['$:cad']:unique symbol }
 
 type ValidUSAPhoneNumber 
-  = NANPPhoneNumber & Valid
-  & { area:ValidUSAAreaCode }
+  = NANPPhoneNumber<ValidUSAAreaCode> & Valid
   & { readonly ['$:usa']:unique symbol }
 
 type ValidNANPPhoneNumber
@@ -77,13 +75,11 @@ type ValidNANPPhoneNumber
   & { readonly ['$:nanp']:unique symbol }
 
 type ValidMexicanPhoneNumberTwoDigitAreaCode
-  = MexicanPhoneNumber & Valid
-  & { area:ValidMexicoCityAreaCode }
+  = MexicanPhoneNumberTwoDigitAreaCode<ValidMexicoCityAreaCode> & Valid
   & { readonly ['$:mex:area-2']:unique symbol }
 
 type ValidMexicanPhoneNumberThreeDigitAreaCode
-  = MexicanPhoneNumber & Valid
-  & { area:ValidTijuanaAreaCode }
+  = MexicanPhoneNumberThreeDigitAreaCode<ValidTijuanaAreaCode> & Valid
   & { readonly ['$:mex:area-3']:unique symbol }
 
 type ValidMexicanPhoneNumber
@@ -110,12 +106,12 @@ function phoneNumber
   ( country:ValidMexicanPhoneNumberTwoDigitAreaCode['country'], 
     area:ValidMexicanPhoneNumberTwoDigitAreaCode['area'], 
     exchange:ValidMexicanPhoneNumberTwoDigitAreaCode['exchange'], 
-    line:ValidMexicanPhoneNumberTwoDigitAreaCode['line'] ):ValidMexicanPhoneNumber
+    line:ValidMexicanPhoneNumberTwoDigitAreaCode['line'] ):ValidMexicanPhoneNumberTwoDigitAreaCode
 function phoneNumber 
   ( country:ValidMexicanPhoneNumberThreeDigitAreaCode['country'], 
     area:ValidMexicanPhoneNumberThreeDigitAreaCode['area'], 
     exchange:ValidMexicanPhoneNumberThreeDigitAreaCode['exchange'], 
-    line:ValidMexicanPhoneNumberThreeDigitAreaCode['line'] ):ValidMexicanPhoneNumber
+    line:ValidMexicanPhoneNumberThreeDigitAreaCode['line'] ):ValidMexicanPhoneNumberThreeDigitAreaCode
 function phoneNumber 
   ( country:NANPPhoneNumber['country'], 
     area:NANPPhoneNumber['area'], 
@@ -125,12 +121,12 @@ function phoneNumber
   ( country:MexicanPhoneNumberTwoDigitAreaCode['country'], 
     area:MexicanPhoneNumberTwoDigitAreaCode['area'], 
     exchange:MexicanPhoneNumberTwoDigitAreaCode['exchange'], 
-    line:MexicanPhoneNumberTwoDigitAreaCode['line'] ):MexicanPhoneNumber
+    line:MexicanPhoneNumberTwoDigitAreaCode['line'] ):MexicanPhoneNumberTwoDigitAreaCode
 function phoneNumber 
   ( country:MexicanPhoneNumberThreeDigitAreaCode['country'], 
     area:MexicanPhoneNumberThreeDigitAreaCode['area'], 
     exchange:MexicanPhoneNumberThreeDigitAreaCode['exchange'], 
-    line:MexicanPhoneNumberThreeDigitAreaCode['line'] ):MexicanPhoneNumber
+    line:MexicanPhoneNumberThreeDigitAreaCode['line'] ):MexicanPhoneNumberThreeDigitAreaCode
 function phoneNumber 
   ( country:PhoneNumber['country'], 
     area:PhoneNumber['area'], 
@@ -139,11 +135,13 @@ function phoneNumber
     { return __(`+${country} (${area}) ${exchange}-${line}`) }
 
 const nanp = phoneNumber('1', '111', '555', '1234')
+is_<Mask<'1', string>>(nanp)
 is_<NANPPhoneNumber>(nanp)
 // @ts-expect-error
 is_<ValidCanadianPhoneNumber>(nanp)
 
 const validMex = phoneNumber('52', '55', '1234', '5678')
+is_<Mask<'52', '55'>>(validMex)
 is_<MexicanPhoneNumber>(validMex)
 is_<ValidMexicanPhoneNumber>(validMex)
 is_<ValidMexicanPhoneNumber>(validMex)
@@ -151,6 +149,7 @@ is_<ValidMexicanPhoneNumber>(validMex)
 is_<NANPPhoneNumber>(validMex)
 
 const validCad = phoneNumber('1', '416', '555', '6789')
+is_<Mask<'1', '416'>>(validCad)
 is_<NANPPhoneNumber>(validCad)
 is_<ValidCanadianPhoneNumber>(validCad)
 // @ts-expect-error
@@ -206,4 +205,4 @@ sendValidMexicanSms(validCad)
 
 // final
 
-sendMexSms(phoneNumber('52', '664', '123', '4567'))
+sendValidMexicanSms(phoneNumber('52', '664', '123', '4567'))
